@@ -1,0 +1,88 @@
+import { PDFDocument } from "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
+
+const fileInput = document.getElementById("fileInput");
+const fileLabel = document.getElementById("fileLabel");
+const compressBtn = document.getElementById("compressBtn");
+const resetBtn = document.getElementById("resetBtn");
+const status = document.getElementById("status");
+const sizeInfo = document.getElementById("sizeInfo");
+const progress = document.getElementById("progress");
+
+let currentFile = null;
+
+const formatSize = (bytes) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+};
+
+const setProgress = (value) => {
+  progress.style.width = `${value}%`;
+};
+
+const resetUI = () => {
+  currentFile = null;
+  fileInput.value = "";
+  fileLabel.textContent = "点击选择 PDF 文件";
+  compressBtn.disabled = true;
+  resetBtn.disabled = true;
+  status.textContent = "等待选择文件";
+  sizeInfo.textContent = "";
+  setProgress(0);
+};
+
+fileInput.addEventListener("change", () => {
+  if (fileInput.files.length === 0) {
+    resetUI();
+    return;
+  }
+
+  currentFile = fileInput.files[0];
+  fileLabel.textContent = currentFile.name;
+  compressBtn.disabled = false;
+  resetBtn.disabled = false;
+  status.textContent = "已选择文件，准备压缩";
+  sizeInfo.textContent = `原始大小：${formatSize(currentFile.size)}`;
+});
+
+resetBtn.addEventListener("click", resetUI);
+
+compressBtn.addEventListener("click", async () => {
+  if (!currentFile) return;
+
+  compressBtn.disabled = true;
+  status.textContent = "正在压缩，请稍候…";
+  setProgress(10);
+
+  try {
+    const arrayBuffer = await currentFile.arrayBuffer();
+    setProgress(35);
+
+    const pdfDoc = await PDFDocument.load(arrayBuffer);
+    setProgress(65);
+
+    const outputBytes = await pdfDoc.save({ useObjectStreams: true });
+    setProgress(85);
+
+    const blob = new Blob([outputBytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = currentFile.name.replace(/\.pdf$/i, "") + "_compressed.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    setProgress(100);
+    status.textContent = "压缩完成，已开始下载";
+    sizeInfo.textContent = `原始大小：${formatSize(currentFile.size)}  →  新文件大小：${formatSize(blob.size)}`;
+  } catch (err) {
+    console.error(err);
+    status.textContent = "压缩失败，请更换 PDF 再试";
+  } finally {
+    compressBtn.disabled = false;
+  }
+});
+
+resetUI();

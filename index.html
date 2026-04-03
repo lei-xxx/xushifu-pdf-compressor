@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PDF 压缩工具（纯前端）</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <p class="eyebrow">纯前端 · 本地处理</p>
+        <h1>PDF 压缩工具</h1>
+        <p class="sub">
+          只在浏览器本地处理文件，不上传服务器。使用
+          <code>pdf-lib</code> 重打包 PDF 以尝试减小体积。
+        </p>
+      </header>
+
+      <section class="card">
+        <label class="file-input">
+          <input id="fileInput" type="file" accept="application/pdf" />
+          <span id="fileLabel">点击选择 PDF 文件</span>
+        </label>
+
+        <div class="actions">
+          <button id="compressBtn" disabled>开始压缩</button>
+          <button id="resetBtn" class="ghost" disabled>重置</button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress" id="progress"></div>
+        </div>
+
+        <p id="status" class="status">等待选择文件</p>
+        <p id="sizeInfo" class="size"></p>
+      </section>
+
+      <section class="tips">
+        <h2>说明</h2>
+        <ul>
+          <li>本工具不会上传你的文件，所有操作都在本地完成。</li>
+          <li>纯前端无法调用 pypdf 的压缩方法，只能尝试“重打包”来减小体积。</li>
+          <li>如果你的 PDF 已高度优化，压缩效果可能不明显。</li>
+        </ul>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
