@@ -8,7 +8,17 @@ const status = document.getElementById("status");
 const sizeInfo = document.getElementById("sizeInfo");
 const progress = document.getElementById("progress");
 
-const API_BASE_URL = "https://mayola-headiest-omega.ngrok-free.dev";
+const DEFAULT_API_BASE_URL = "https://mayola-headiest-omega.ngrok-free.dev";
+let apiBaseUrl = DEFAULT_API_BASE_URL;
+
+const configPromise = fetch(`./config.json?ts=${Date.now()}`)
+  .then((res) => (res.ok ? res.json() : null))
+  .then((data) => {
+    if (data && typeof data.apiBaseUrl === "string" && data.apiBaseUrl.trim()) {
+      apiBaseUrl = data.apiBaseUrl.trim();
+    }
+  })
+  .catch(() => {});
 
 let currentFile = null;
 
@@ -78,7 +88,8 @@ dropZone.addEventListener("drop", (event) => {
 
 compressBtn.addEventListener("click", async () => {
   if (!currentFile) return;
-  if (API_BASE_URL.includes("YOUR-RENDER-SERVICE")) {
+  await configPromise;
+  if (apiBaseUrl.includes("YOUR-RENDER-SERVICE")) {
     status.textContent = "请先配置服务端地址";
     compressBtn.disabled = false;
     return;
@@ -95,13 +106,25 @@ compressBtn.addEventListener("click", async () => {
 
     setProgress(40);
 
-    const response = await fetch(`${API_BASE_URL}/compress`, {
+    const response = await fetch(`${apiBaseUrl}/compress`, {
       method: "POST",
       body: formData,
     });
 
     if (!response.ok) {
-      throw new Error("压缩失败，请稍后重试");
+      let detail = "";
+      try {
+        const data = await response.json();
+        if (data && data.error) detail = `（${data.error}）`;
+      } catch (err) {
+        try {
+          const text = await response.text();
+          if (text) detail = `（${text.slice(0, 120)}）`;
+        } catch (err2) {
+          detail = "";
+        }
+      }
+      throw new Error(`压缩失败，状态码 ${response.status} ${detail}`);
     }
 
     setProgress(75);
@@ -124,7 +147,7 @@ compressBtn.addEventListener("click", async () => {
     sizeInfo.textContent = `原始大小：${formatSize(original)}  →  新文件大小：${formatSize(compressed)}  |  体积变化：${percentText}`;
   } catch (err) {
     console.error(err);
-    status.textContent = "压缩失败，请更换 PDF 再试";
+    status.textContent = err instanceof Error ? err.message : "压缩失败，请更换 PDF 再试";
   } finally {
     compressBtn.disabled = false;
   }
