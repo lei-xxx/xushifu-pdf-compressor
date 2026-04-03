@@ -12,8 +12,8 @@
         <p class="eyebrow">纯前端 · 本地处理</p>
         <h1>PDF 压缩工具</h1>
         <p class="sub">
-          只在浏览器本地处理文件，不上传服务器。使用
-          <code>pdf-lib</code> 重打包 PDF 以尝试减小体积。
+          文件会上传到你的压缩服务端进行处理，使用 Ghostscript 强压缩，
+          完成后自动下载。
         </p>
       </header>
 
@@ -28,6 +28,16 @@
           <button id="resetBtn" class="ghost" disabled>重置</button>
         </div>
 
+        <label class="quality">
+          压缩强度：
+          <select id="qualitySelect">
+            <option value="screen">极强（清晰度最低）</option>
+            <option value="ebook" selected>均衡（推荐）</option>
+            <option value="printer">较清晰</option>
+            <option value="prepress">高质量</option>
+          </select>
+        </label>
+
         <div class="progress-wrap">
           <div class="progress" id="progress"></div>
         </div>
@@ -39,9 +49,9 @@
       <section class="tips">
         <h2>说明</h2>
         <ul>
-          <li>本工具不会上传你的文件，所有操作都在本地完成。</li>
-          <li>纯前端无法调用 pypdf 的压缩方法，只能尝试“重打包”来减小体积。</li>
-          <li>如果你的 PDF 已高度优化，压缩效果可能不明显。</li>
+          <li>文件仅用于压缩处理，完成后会自动下载。</li>
+          <li>压缩强度越高，文件越小但清晰度会降低。</li>
+          <li>如果压缩后变大，可尝试降低强度或换其他模式。</li>
         </ul>
       </section>
     </main>

@@ -1,13 +1,14 @@
-import { PDFDocument } from "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
-
 const fileInput = document.getElementById("fileInput");
 const fileLabel = document.getElementById("fileLabel");
 const dropZone = document.getElementById("dropZone");
 const compressBtn = document.getElementById("compressBtn");
 const resetBtn = document.getElementById("resetBtn");
+const qualitySelect = document.getElementById("qualitySelect");
 const status = document.getElementById("status");
 const sizeInfo = document.getElementById("sizeInfo");
 const progress = document.getElementById("progress");
+
+const API_BASE_URL = "https://mayola-headiest-omega.ngrok-free.dev";
 
 let currentFile = null;
 
@@ -77,22 +78,34 @@ dropZone.addEventListener("drop", (event) => {
 
 compressBtn.addEventListener("click", async () => {
   if (!currentFile) return;
+  if (API_BASE_URL.includes("YOUR-RENDER-SERVICE")) {
+    status.textContent = "请先配置服务端地址";
+    compressBtn.disabled = false;
+    return;
+  }
 
   compressBtn.disabled = true;
   status.textContent = "正在压缩，请稍候…";
   setProgress(10);
 
   try {
-    const arrayBuffer = await currentFile.arrayBuffer();
-    setProgress(35);
+    const formData = new FormData();
+    formData.append("pdf", currentFile);
+    formData.append("quality", qualitySelect.value);
 
-    const pdfDoc = await PDFDocument.load(arrayBuffer);
-    setProgress(65);
+    setProgress(40);
 
-    const outputBytes = await pdfDoc.save({ useObjectStreams: true });
-    setProgress(85);
+    const response = await fetch(`${API_BASE_URL}/compress`, {
+      method: "POST",
+      body: formData,
+    });
 
-    const blob = new Blob([outputBytes], { type: "application/pdf" });
+    if (!response.ok) {
+      throw new Error("压缩失败，请稍后重试");
+    }
+
+    setProgress(75);
+    const blob = await response.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

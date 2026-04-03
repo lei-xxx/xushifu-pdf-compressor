@@ -96,6 +96,21 @@ body {
   flex-wrap: wrap;
 }
 
+select {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d8c4b6;
+  background: #fffaf6;
+  font-size: 0.95rem;
+}
+
+.quality {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  color: var(--muted);
+}
+
 button {
   border: none;
   background: var(--accent);
