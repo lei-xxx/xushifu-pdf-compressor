@@ -16,6 +16,12 @@ const formatSize = (bytes) => {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 };
 
+const formatPercent = (value) => {
+  const safe = Math.max(-999, Math.min(999, value));
+  const sign = safe > 0 ? "-" : safe < 0 ? "+" : "";
+  return `${sign}${Math.abs(safe).toFixed(1)}%`;
+};
+
 const setProgress = (value) => {
   progress.style.width = `${value}%`;
 };
@@ -76,7 +82,11 @@ compressBtn.addEventListener("click", async () => {
 
     setProgress(100);
     status.textContent = "压缩完成，已开始下载";
-    sizeInfo.textContent = `原始大小：${formatSize(currentFile.size)}  →  新文件大小：${formatSize(blob.size)}`;
+    const original = currentFile.size;
+    const compressed = blob.size;
+    const ratio = original > 0 ? (1 - compressed / original) * 100 : 0;
+    const percentText = formatPercent(ratio);
+    sizeInfo.textContent = `原始大小：${formatSize(original)}  →  新文件大小：${formatSize(compressed)}  |  体积变化：${percentText}`;
   } catch (err) {
     console.error(err);
     status.textContent = "压缩失败，请更换 PDF 再试";
