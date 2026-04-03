@@ -2,6 +2,7 @@ import { PDFDocument } from "https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm";
 
 const fileInput = document.getElementById("fileInput");
 const fileLabel = document.getElementById("fileLabel");
+const dropZone = document.getElementById("dropZone");
 const compressBtn = document.getElementById("compressBtn");
 const resetBtn = document.getElementById("resetBtn");
 const status = document.getElementById("status");
@@ -29,7 +30,7 @@ const setProgress = (value) => {
 const resetUI = () => {
   currentFile = null;
   fileInput.value = "";
-  fileLabel.textContent = "点击选择 PDF 文件";
+  fileLabel.textContent = "点击选择或拖拽 PDF 文件到此处";
   compressBtn.disabled = true;
   resetBtn.disabled = true;
   status.textContent = "等待选择文件";
@@ -52,6 +53,27 @@ fileInput.addEventListener("change", () => {
 });
 
 resetBtn.addEventListener("click", resetUI);
+
+["dragenter", "dragover"].forEach((eventName) => {
+  dropZone.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    dropZone.classList.add("drag-active");
+  });
+});
+
+["dragleave", "drop"].forEach((eventName) => {
+  dropZone.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    dropZone.classList.remove("drag-active");
+  });
+});
+
+dropZone.addEventListener("drop", (event) => {
+  const files = event.dataTransfer?.files;
+  if (!files || files.length === 0) return;
+  fileInput.files = files;
+  fileInput.dispatchEvent(new Event("change"));
+});
 
 compressBtn.addEventListener("click", async () => {
   if (!currentFile) return;

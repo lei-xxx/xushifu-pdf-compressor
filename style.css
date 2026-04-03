@@ -76,6 +76,11 @@ body {
   background: #fef5ef;
 }
 
+.file-input.drag-active {
+  border-color: var(--accent-dark);
+  background: #fde8dc;
+}
+
 .file-input input {
   display: none;
 }
